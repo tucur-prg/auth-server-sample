@@ -31,11 +31,10 @@ async def authorization(
         token
         id_token
     '''
-    logger.info(response_type.split(' '))
-
     return templates.TemplateResponse("authorization.j2", {
         "request": request,
         "client_id": client_id,
+        "response_type": response_type,
         "scope": scope,
         "state": state,
     })
@@ -45,6 +44,7 @@ async def decision(
     request: Request,
     approved: str = Form(...),
     client_id: Optional[str] = Form(...),
+    response_type: Optional[str] = Form(...),
     username: Optional[str] = Form(None),
     password: Optional[str] = Form(None),
     scope: Optional[str] = Form(""),
@@ -52,17 +52,25 @@ async def decision(
 ):
     # TODO: redirect_uri を client と関連づける
     base_uri = "http://localhost:8081/cb?stete=" + state
-    if approved == "true":
-        # TODO: token の場合は unsupported_response_type を返す
 
-        async with httpx.AsyncClient() as client:
-            response = await client.post('http://localhost:8080/v1/code', data = {
-                "client_id": client_id,
-                "username": username,
-                "password": password,
-                "scope": scope,
-            })
-        res = response.json()
+    if approved == "true":
+        response_type = response_type.split(' ')
+        logger.info(response_type)
+        
+        if "code" in response_type:
+            async with httpx.AsyncClient() as client:
+                response = await client.post('http://localhost:8080/v1/code', data = {
+                    "client_id": client_id,
+                    "username": username,
+                    "password": password,
+                    "scope": scope,
+                    })
+            res = response.json()
+        else:
+            res = {
+                "error": "unsupported_response_type",
+                "error_description": "",
+            }
 
         decision = "許可"
         if "code" in res:
