@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>認可エンドポイント</title>
+</head>
+
+<body>
+<h2>認可エンドポイント</h2>
+クライアント：{{ client_id }}
+<form method="POST" action="/decision">
+Username: <input type="text" name="username" value=""><br>
+Password: <input type="text" name="password" value=""><br>
+<br>
+<input type="hidden" name="approved" value="true">
+<input type="hidden" name="client_id" value="{{ client_id }}">
+<input type="hidden" name="scope" value="{{ scope if state }}">
+<input type="hidden" name="state" value="{{ state if state }}">
+<input type="submit" value="許可">
+</form>
+
+<form method="POST" action="/decision">
+<input type="hidden" name="approved" value="false">
+<input type="hidden" name="state" value="{{ state if state }}">
+<input type="submit" value="拒否">
+</form>
+</body>
+</html>
