@@ -18,12 +18,12 @@ class ClientCredentialsService(GrantsService):
         pass
 
     def generate_token(self):
-        token = Token(client_id=self.client_id, scope=self.scope)
+        access_token = Token(client_id=self.client_id, scope=self.scope)
 
-        self.model.saveToken(self.GRANT_TYPE, token)
+        self.model.saveToken(access_token)
 
         return {
-            "access_token": token.key,
+            "access_token": access_token.key,
             "token_type": "Bearer",
-            "expire_in": token.expire_in,
+            "expire_in": access_token.expire_in,
         }

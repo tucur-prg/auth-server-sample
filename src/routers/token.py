@@ -5,11 +5,13 @@ from fastapi import APIRouter, Form, Header, Depends
 import logging
 
 from service.grants import ServiceFactory, GrantsService
+from service.client_service import ClientService
 from service.user_service import UserService
 from exception import UnauthorizedClientException
 from models.auth import AuthModel, get_auth_model
 from models.client import ClientModel, get_client_model
 from entity.oauth import Code
+from exception import InvalidTokenException, TokenExpiredException, InvalidRequestException
 
 logger = logging.getLogger("uvicorn")
 
@@ -45,3 +47,25 @@ async def token(
     logic.validation()
 
     return logic.generate_token()
+
+@router.post("/v1/token/info", tags=["token"])
+async def token_info(
+    token: str = Form(...),
+    client: ClientService = Depends(ClientService),
+    model: AuthModel = Depends(get_auth_model),
+):
+    access_token = model.readToken(token)
+    if not access_token:
+        raise InvalidTokenException()
+
+    if access_token.isExpired():
+        raise TokenExpiredException()
+        
+    if not access_token.equals(client.client_id):
+        raise InvalidRequestException()
+
+    return {
+        "username": access_token.username,
+        "scope": access_token.scope,
+        "expire_in": access_token.expire_in,
+    }

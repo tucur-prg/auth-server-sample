@@ -21,15 +21,15 @@ class ResourceOwnerService(GrantsService):
         pass
 
     def generate_token(self):
-        token = Token(client_id=self.client_id, username=self.username, scope=self.scope)
+        access_token = Token(client_id=self.client_id, username=self.username, scope=self.scope)
         refresh_token = RefreshToken(client_id=self.client_id, username=self.username, scope=self.scope)
 
-        self.model.saveToken(self.GRANT_TYPE, token)
+        self.model.saveToken(access_token)
         self.model.saveRefreshToken(refresh_token)
 
         return {
-            "access_token": token.key,
+            "access_token": access_token.key,
             "token_type": "Bearer",
-            "expire_in": token.expire_in,
+            "expire_in": access_token.expire_in,
             "refresh_token": refresh_token.key,
         }

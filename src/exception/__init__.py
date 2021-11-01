@@ -39,5 +39,8 @@ class InvalidScopeException(AuthException):
 class InvalidUserException(AuthException):
     error = "invalid_user"
 
+class InvalidTokenException(AuthException):
+    error = "invalid_token"
+
 class TokenExpiredException(AuthException):
     error = "token_expired"
