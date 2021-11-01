@@ -1,8 +1,13 @@
 
-from exception import InvalidRequestException, InvalidGrantException, UnauthorizedClientException
+from exception import (
+    InvalidRequestException,
+    InvalidGrantException,
+    UnauthorizedClientException,
+    TokenExpiredException
+)
 from .grants_service import GrantsService
 
-from entity.token import Token, RefreshToken
+from entity.oauth import Token, RefreshToken
 
 class RefreshTokenService(GrantsService):
     GRANT_TYPE = "refresh_token"
@@ -19,8 +24,11 @@ class RefreshTokenService(GrantsService):
         if not refresh_token:
             raise InvalidGrantException("Token has been expired or revoked.")
 
-        if refresh_token.client_id != self.client_id:
+        if not refresh_token.equals(self.client_id):
             raise UnauthorizedClientException()
+
+        if refresh_token.isExpired():
+            raise TokenExpiredException()
 
     def generate_token(self):
         res = self.model.readRefreshToken(self.refresh_token)

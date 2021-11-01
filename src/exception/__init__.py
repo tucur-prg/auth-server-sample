@@ -38,3 +38,6 @@ class InvalidScopeException(AuthException):
 # Org
 class InvalidUserException(AuthException):
     error = "invalid_user"
+
+class TokenExpiredException(AuthException):
+    error = "token_expired"

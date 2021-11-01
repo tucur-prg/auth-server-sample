@@ -1,18 +1,17 @@
 from models.model import Model, get_connection
 
-from entity.token import Token, RefreshToken
+from entity.oauth import Code, Token, RefreshToken
 
 class AuthModel(Model):
-    def saveCode(self, code, client_id, username, scope):
-        self.set(self.getKey("codes", code), {
-            "code": code,
-            "client_id": client_id,
-            "username": username,
-            "scope": scope,
-        })
+    def saveCode(self, code):
+        self.set(self.getKey("codes", code.key), code.__dict__)
 
     def readCode(self, code):
-        return self.get(self.getKey("codes", code))
+        res = self.get(self.getKey("codes", code))
+        if not res:
+            return None
+
+        return Code(**res)
 
     def removeCode(self, code):
         self.delete(self.getKey("codes", code))

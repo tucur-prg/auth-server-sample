@@ -1,7 +1,7 @@
 
 from .grants_service import GrantsService
 
-from entity.token import Token
+from entity.oauth import Token
 
 import logging
 

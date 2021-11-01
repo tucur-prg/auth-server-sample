@@ -1,8 +1,13 @@
 
-from exception import InvalidRequestException, InvalidGrantException, UnauthorizedClientException
+from exception import (
+    InvalidRequestException,
+    InvalidGrantException,
+    UnauthorizedClientException,
+    TokenExpiredException
+)
 from .grants_service import GrantsService
 
-from entity.token import Token, RefreshToken
+from entity.oauth import Token, RefreshToken
 
 class AuthorizationCodeService(GrantsService):
     GRANT_TYPE = "authorization_code"
@@ -19,14 +24,17 @@ class AuthorizationCodeService(GrantsService):
         if not res:
             raise InvalidGrantException("The authorization code is not found.")
 
-        if res["client_id"] != self.client_id:
+        if not res.equals(self.client_id):
             raise UnauthorizedClientException()
+            
+        if res.isExpired():
+            raise TokenExpiredException()
 
     def generate_token(self):
         res = self.model.readCode(self.code)
 
-        token = Token(client_id=res["client_id"], username=res["username"], scope=res["scope"])
-        refresh_token = RefreshToken(client_id=res["client_id"], username=res["username"], scope=res["scope"])
+        token = Token(client_id=res.client_id, username=res.username, scope=res.scope)
+        refresh_token = RefreshToken(client_id=res.client_id, username=res.username, scope=res.scope)
 
         self.model.saveToken(self.GRANT_TYPE, token)
         self.model.saveRefreshToken(refresh_token)

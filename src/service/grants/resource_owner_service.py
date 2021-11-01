@@ -2,7 +2,7 @@
 from exception import InvalidRequestException
 from .grants_service import GrantsService
 
-from entity.token import Token, RefreshToken
+from entity.oauth import Token, RefreshToken
 
 class ResourceOwnerService(GrantsService):
     GRANT_TYPE = "password"

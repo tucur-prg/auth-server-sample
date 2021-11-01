@@ -9,7 +9,7 @@ from service.user_service import UserService
 from exception import UnauthorizedClientException
 from models.auth import AuthModel, get_auth_model
 from models.client import ClientModel, get_client_model
-from util.id_gen import random_string
+from entity.oauth import Code
 
 logger = logging.getLogger("uvicorn")
 
@@ -28,13 +28,14 @@ async def code(
         raise UnauthorizedClientException()
 
     user.verify()
+    
+    code = Code(client_id=client_id, username=user.username, scope=scope)
 
-    code = random_string(5)
-
-    auth_model.saveCode(code, client_id, user.username, scope)
+    auth_model.saveCode(code)
 
     return {
-        "code": code,
+        "code": code.key,
+        "expire_in": code.expire_in,
     }
 
 @router.post("/v1/token", tags=["token"])
