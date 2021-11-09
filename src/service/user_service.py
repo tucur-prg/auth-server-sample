@@ -1,8 +1,7 @@
 from typing import Optional
+import logging
 
 from fastapi import Form, Depends
-
-import logging
 
 from exception import InvalidUserException
 

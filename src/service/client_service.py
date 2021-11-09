@@ -1,11 +1,14 @@
 from typing import Optional
 import base64
+import logging
 
 from fastapi import Header, Depends
 
 from exception import UnauthorizedClientException
 
 from models.client import get_client_model
+
+logger = logging.getLogger("uvicorn")
 
 class ClientService:
     def __init__(
@@ -14,7 +17,7 @@ class ClientService:
         model: dict = Depends(get_client_model)
     ):
         res = authorization.split(" ")
-        if res[0] != "Basic":
+        if res[0].lower() != "basic":
             raise UnauthorizedClientException()
 
         client_id, client_secret = base64.urlsafe_b64decode(res[1]).decode("utf-8").split(":")

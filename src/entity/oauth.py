@@ -25,13 +25,13 @@ class Code:
         return (now - self.stamp) > self.expire_in
 
 class Token:
-    def __init__(self, *args, client_id, username = None, scope = None, expire_in = 3600, key = None, stamp = None, **keys):
+    def __init__(self, *args, client_id, username = None, scope = None, expire_in = 3600, **keys):
         self.client_id = client_id
-        self.username  = username
-        self.scope     = scope
+        self.username = username
+        self.scope  = scope
         self.expire_in = expire_in
-        self.key       = key if key else self._generateKey()
-        self.stamp     = stamp if stamp else time.time()
+        self.key = keys["key"] if "key" in keys else self._generateKey()
+        self.stamp = keys["stamp"] if "stamp" in keys else time.time()
 
     def _generateKey(self):
         return random_string(10)

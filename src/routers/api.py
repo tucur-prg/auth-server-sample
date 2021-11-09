@@ -1,8 +1,7 @@
 from typing import Optional
+import logging
 
 from fastapi import APIRouter, Header
-
-import logging
 
 logger = logging.getLogger("uvicorn")
 
@@ -18,7 +17,7 @@ async def user(
         }
 
     type, token = authorization.split(' ')
-    if type != 'Bearer':
+    if type.lower() != 'bearer':
         return {
             "error": "access_denied",
         }

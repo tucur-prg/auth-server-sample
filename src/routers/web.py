@@ -1,11 +1,10 @@
 from typing import Optional
+import logging
+import httpx
 
 from fastapi import APIRouter, Request, Form
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
-
-import logging
-import httpx
 
 from models.auth import get_auth_model
 from models.client import get_client_model
