@@ -27,11 +27,11 @@ class ClientService:
         self.model = model
 
     def verify(self):
-        client = self.model.getClient(self.client_id)
+        client = self.model.readClient(self.client_id)
         if not client:
             raise UnauthorizedClientException()
-
-        if client["client_secret"] != self.client_secret:
+        
+        if  not client.equals(self.client_secret):
             raise UnauthorizedClientException()
 
         return True

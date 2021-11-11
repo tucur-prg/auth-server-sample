@@ -21,11 +21,11 @@ class UserService:
         self.model = model
 
     def verify(self):
-        user = self.model.getUser(self.username)
+        user = self.model.readUser(self.username)
         if not user:
             raise InvalidUserException()
 
-        if user["password"] != self.password:
+        if not user.equals(self.password):
             raise InvalidUserException()
 
         return True

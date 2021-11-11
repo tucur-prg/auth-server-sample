@@ -40,13 +40,17 @@ async def code(
     auth_model: AuthModel = Depends(get_auth_model),
     client_model: ClientModel = Depends(get_client_model),
 ):
-    client = client_model.getClient(client_id)
+    client = client_model.readClient(client_id)
     if not client:
         raise UnauthorizedClientException()
 
     user.verify()
-    
-    code = Code(client_id=client_id, username=user.username, scope=scope)
+
+    code = Code(**{
+        "client_id": client_id,
+        "username": user.username,
+        "scope": scope,
+    })
 
     auth_model.saveCode(code)
 
@@ -74,6 +78,8 @@ async def token_info(
     client: ClientService = Depends(ClientService),
     model: AuthModel = Depends(get_auth_model),
 ):
+    client.verify()
+
     access_token = model.readToken(token)
     if not access_token:
         raise InvalidTokenException()

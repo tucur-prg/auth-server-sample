@@ -2,11 +2,10 @@ from typing import Optional
 import logging
 import httpx
 
-from fastapi import APIRouter, Request, Form
+from fastapi import APIRouter, Request, Form, Depends, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
-from models.auth import get_auth_model
 from models.client import get_client_model
 
 logger = logging.getLogger("uvicorn")
@@ -48,14 +47,18 @@ async def decision(
     password: Optional[str] = Form(None),
     scope: Optional[str] = Form(""),
     state: Optional[str] = Form(""),
+    client_model: dict = Depends(get_client_model),
 ):
-    # TODO: redirect_uri を client と関連づける
-    base_uri = "http://localhost:8081/cb?stete=" + state
+    client = client_model.readClient(client_id)
+    if not client:
+        raise HTTPException(status_code=404, detail="client not found.")
+
+    base_uri = client.redirect_uri + "?stete=" + state
 
     if approved == "true":
         response_type = response_type.split(' ')
         logger.info(response_type)
-        
+
         if "code" in response_type:
             async with httpx.AsyncClient() as client:
                 response = await client.post('http://localhost:8080/v1/code', data = {
@@ -63,7 +66,7 @@ async def decision(
                     "username": username,
                     "password": password,
                     "scope": scope,
-                    })
+                })
             res = response.json()
         else:
             res = {

@@ -1,15 +1,11 @@
 from typing import Optional
-
-from fastapi import FastAPI, Depends
-from fastapi import Form, Request
-from fastapi.responses import JSONResponse
-
 import logging
-import jwt
+
+from fastapi import FastAPI, Depends, Form, Request
+from fastapi.responses import JSONResponse
 
 from exception import AuthException
 from routers import web, token, api
-from util.jwt import MyJWT
 
 logger = logging.getLogger("uvicorn")
 
@@ -35,16 +31,21 @@ async def auth_exception_handler(request: Request, e: AuthException):
 async def health():
     return {"text": "OK"}
 
+
+import jwt
+from util.jwt import MyJWT
+
 @app.get("/test")
 async def test():
-#    token = jwt.encode({"some": "payloads"}, "secret", algorithm="HS256")    
-#    logger.info(MyJWT.decode(token, "secret"))
-#    logger.info(MyJWT.encode({"some": "payloads"}, "secret", algorithm="HS256"))
-#    logger.info(token)
+    token = jwt.encode({"some": "payloads"}, "secret", algorithm="HS256")    
+    logger.info(MyJWT.decode(token, "secret"))
+    logger.info(MyJWT.encode({"some": "payloads"}, "secret", algorithm="HS256"))
+    logger.info(token)
 
     return {}
 
 from models.user import get_user_model
+from entity.user import User
 
 @app.post("/user/register")
 async def user_register(
@@ -53,29 +54,40 @@ async def user_register(
 ):
     password = "Passw0rd"
 
-    user_model.saveUser(username, password)
+    user = User(**{
+        "username": username,
+    })
+
+    user_model.saveUser(user)
 
     return {
-        "username": username,
-        "password": password,
+        "username": user.username,
+        "password": user.password,
     }
 
 from models.client import get_client_model
+from entity.client import Client
 
 @app.post("/client/register")
 async def client_register(
     client_id: str = Form(...),
     name: str = Form(...),
+    redirect_uri: str = Form(...),
     type: Optional[str] = Form("public", regex="^(public|confidential)$"),
     client_model: dict = Depends(get_client_model),
 ):
-    client_secret = "secret987"
-
-    client_model.saveClient(client_id, client_secret, name, type)
-
-    return {
-        "name": name,
+    client = Client(**{
         "client_id": client_id,
-        "client_secret": client_secret,
+        "name": name,
         "type": type,
+        "redirect_uri": redirect_uri,
+    })
+
+    client_model.saveClient(client)
+    
+    return {
+        "name": client.name,
+        "client_id": client.client_id,
+        "client_secret": client.client_secret,
+        "type": client.type,
     }
