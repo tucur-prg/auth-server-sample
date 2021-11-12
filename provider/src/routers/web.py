@@ -3,7 +3,7 @@ import logging
 import httpx
 
 from fastapi import APIRouter, Request, Form, Depends, HTTPException
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
 from models.client import get_client_model
@@ -89,8 +89,10 @@ async def decision(
         decision = "拒否"
         redirect_uri = base_uri + "&error=access_denied&error_description=The+request+was+not+approved."
 
-    return templates.TemplateResponse("decision.j2", {
-        "request": request,
-        "decision": decision,
-        "redirect_uri": redirect_uri,
-    })
+    return RedirectResponse(redirect_uri, status_code=301)
+
+#    return templates.TemplateResponse("decision.j2", {
+#        "request": request,
+#        "decision": decision,
+#        "redirect_uri": redirect_uri,
+#    })
