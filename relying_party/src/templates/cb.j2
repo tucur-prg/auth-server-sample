@@ -7,8 +7,19 @@
 
 <body>
 <h1>Callback</h1>
-
-{{ code if code }}
+<a href="/">戻る</a><br>
+<br>
+{{ token if token }}
 {{ error if error }}
+
+{% if token_payload %}
+<h2>ID Token (token)</h2>
+<pre>{{ token_payload }}</pre>
+{% endif %}
+
+{% if code_payload %}
+<h2>ID Token (code)</h2>
+<pre>{{ code_payload }}</pre>
+{% endif %}
 </body>
 </html>

@@ -22,7 +22,8 @@ async def authorization(
     redirect_uri: Optional[str] = None,
     scope: Optional[str] = None,
     state: Optional[str] = None,
-):    
+    nonce: Optional[str] = None,
+):
     '''
     response_type: スペース区切り
         code
@@ -35,6 +36,7 @@ async def authorization(
         "response_type": response_type,
         "scope": scope,
         "state": state,
+        "nonce": nonce,
     })
     
 @router.post("/decision", response_class=HTMLResponse, include_in_schema=False)
@@ -47,6 +49,7 @@ async def decision(
     password: Optional[str] = Form(None),
     scope: Optional[str] = Form(""),
     state: Optional[str] = Form(""),
+    nonce: Optional[str] = Form(""),
     client_model: dict = Depends(get_client_model),
 ):
     client = client_model.readClient(client_id)
@@ -66,6 +69,7 @@ async def decision(
                     "username": username,
                     "password": password,
                     "scope": scope,
+                    "nonce": nonce,
                 })
             res = response.json()
         else:
@@ -74,25 +78,26 @@ async def decision(
                 "error_description": "",
             }
 
-        decision = "許可"
         if "code" in res:
             redirect_uri = base_uri + "&code=" + res["code"]
 
-            # response_typeにid_tokenがあった場合はJWTを含める
-            if False:
-                redirect_uri += "&id_token="
+            if "id_token" in response_type:
+                logger.info("generate code id_token.")
+                async with httpx.AsyncClient() as client:
+                    response = await client.post('http://localhost:8080/v1/id_token', data = {
+                        "client_id": client_id,
+                        "username": username,
+                        "password": password,
+                        "nonce": nonce,
+                    })
+                res = response.json()
+
+                redirect_uri += "&id_token=" + res["id_token"]
         else:
             # 可能性： server_error, temporarily_unavailable
             redirect_uri = base_uri + "&error=" + res["error"] + "&error_description=" + res["error_description"].replace(" ", "+")
 
     else:
-        decision = "拒否"
         redirect_uri = base_uri + "&error=access_denied&error_description=The+request+was+not+approved."
 
     return RedirectResponse(redirect_uri, status_code=301)
-
-#    return templates.TemplateResponse("decision.j2", {
-#        "request": request,
-#        "decision": decision,
-#        "redirect_uri": redirect_uri,
-#    })

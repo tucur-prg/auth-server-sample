@@ -1,4 +1,5 @@
 from typing import Optional
+import time
 import logging
 
 from fastapi import APIRouter, Form, Depends
@@ -28,6 +29,8 @@ from exception import (
     InvalidRequestException
 )
 
+from util.jwt import MyJWT
+
 logger = logging.getLogger("uvicorn")
 
 router = APIRouter()
@@ -36,6 +39,7 @@ router = APIRouter()
 async def code(
     client_id: str = Form(...),
     scope: Optional[str] = Form(None),
+    nonce: Optional[str] = Form(None),
     user: UserService = Depends(UserService),
     auth_model: AuthModel = Depends(get_auth_model),
     client_model: ClientModel = Depends(get_client_model),
@@ -50,6 +54,7 @@ async def code(
         "client_id": client_id,
         "username": user.username,
         "scope": scope,
+        "nonce": nonce,
     })
 
     auth_model.saveCode(code)
@@ -57,6 +62,33 @@ async def code(
     return {
         "code": code.key,
         "expire_in": code.expire_in,
+    }
+
+@router.post("/v1/id_token", tags=["token"])
+async def id_token(
+    client_id: str = Form(...),
+    nonce: Optional[str] = Form(None),
+    user: UserService = Depends(UserService),
+    client_model: ClientModel = Depends(get_client_model),
+):
+    client = client_model.readClient(client_id)
+    if not client:
+        raise UnauthorizedClientException()
+
+    user.verify()
+
+    payload = {
+        "iss": "http://localhost:8080",
+        "sub": user.username,
+        "aud": client_id,
+        "exp": int(time.time()) + 3600,
+        "iat": int(time.time()),
+        "auth_time": int(time.time()),
+        "nonce": nonce,
+    }
+
+    return {
+        "id_token": MyJWT.encode(payload, "secret", algorithm="HS256"),
     }
 
 @router.post("/v1/token", tags=["token"], dependencies=[

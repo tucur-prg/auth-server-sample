@@ -1,4 +1,5 @@
 from typing import Optional
+import time
 import logging
 
 from fastapi import Depends, Form
@@ -13,6 +14,8 @@ from service.code_service import CodeService
 from models.auth import get_auth_model
 
 from entity.oauth import Token, RefreshToken
+
+from util.jwt import MyJWT
 
 logger = logging.getLogger("uvicorn")
 
@@ -43,7 +46,7 @@ class AuthorizationCodeService(GrantsService):
 
     def generate_token(self):
         res = self.model.readCode(self.code.code)
-        
+
         token_args = {
             "client_id": res.client_id,
             "username": res.username,
@@ -57,9 +60,27 @@ class AuthorizationCodeService(GrantsService):
         self.model.saveRefreshToken(refresh_token)
         self.model.removeCode(self.code.code)
 
-        return {
+
+        response = {
             "access_token": access_token.key,
             "token_type": "Bearer",
             "expire_in": access_token.expire_in,
             "refresh_token": refresh_token.key,
         }
+
+        if "openid" in res.scope.split(" "):
+            logger.info("generate token id_token.")
+            payload = {
+                "iss": "http://localhost:8080",
+                "sub": res.username,
+                "aud": res.client_id,
+                "exp": int(time.time()) + 3600,
+                "iat": int(time.time()),
+                "auth_time": int(time.time()),
+                "nonce": res.nonce,
+            }
+
+            response["id_token"] = MyJWT.encode(payload, "secret", algorithm="HS256")
+
+
+        return response

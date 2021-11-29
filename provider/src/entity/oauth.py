@@ -18,6 +18,7 @@ class Code(BaseModel):
     client_id: str
     username: str
     scope: str
+    nonce: str = None
     expire_in: int = 600
     stamp: float = Field(default_factory=time.time)
 
