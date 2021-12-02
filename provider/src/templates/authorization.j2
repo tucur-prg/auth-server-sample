@@ -20,6 +20,8 @@ Password: <input type="text" name="password" value=""><br>
 <input type="hidden" name="scope" value="{{ scope if state }}">
 <input type="hidden" name="state" value="{{ state if state }}">
 <input type="hidden" name="nonce" value="{{ nonce if nonce }}">
+<input type="hidden" name="code_challenge" value="{{ code_challenge if code_challenge }}">
+<input type="hidden" name="code_challenge_method" value="{{ code_challenge_method if code_challenge_method }}">
 <input type="submit" value="許可">
 </form>
 
@@ -30,6 +32,8 @@ Password: <input type="text" name="password" value=""><br>
 <input type="hidden" name="scope" value="{{ scope if state }}">
 <input type="hidden" name="state" value="{{ state if state }}">
 <input type="hidden" name="nonce" value="{{ nonce if nonce }}">
+<input type="hidden" name="code_challenge" value="{{ code_challenge if code_challenge }}">
+<input type="hidden" name="code_challenge_method" value="{{ code_challenge_method if code_challenge_method }}">
 <input type="submit" value="拒否">
 </form>
 </body>

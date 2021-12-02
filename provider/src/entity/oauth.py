@@ -4,6 +4,7 @@ import logging
 import time
 
 from util.id_gen import random_string
+import util.pkce as pkce
 
 logger = logging.getLogger("uvicorn")
 
@@ -19,6 +20,8 @@ class Code(BaseModel):
     username: str
     scope: str
     nonce: str = None
+    code_challenge: str = None
+    code_challenge_method: str = None
     expire_in: int = 600
     stamp: float = Field(default_factory=time.time)
 
@@ -28,6 +31,13 @@ class Code(BaseModel):
     def isExpired(cls):
         now = time.time()
         return (now - cls.stamp) > cls.expire_in
+
+    def validatePKCE(cls, v):
+        if not cls.code_challenge_method:
+            return True
+        elif cls.code_challenge_method.lower() == pkce.PLAIN:
+            return cls.code_challenge == v
+        return cls.code_challenge == pkce.s256(v.encode())
 
 class Token(BaseModel):
     key: str = Field(default_factory=token_generator)

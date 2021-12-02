@@ -23,6 +23,8 @@ async def authorization(
     scope: Optional[str] = None,
     state: Optional[str] = None,
     nonce: Optional[str] = None,
+    code_challenge: Optional[str] = None,
+    code_challenge_method: Optional[str] = None,
 ):
     '''
     response_type: スペース区切り
@@ -37,6 +39,8 @@ async def authorization(
         "scope": scope,
         "state": state,
         "nonce": nonce,
+        "code_challenge": code_challenge,
+        "code_challenge_method": code_challenge_method,
     })
     
 @router.post("/decision", response_class=HTMLResponse, include_in_schema=False)
@@ -50,6 +54,8 @@ async def decision(
     scope: Optional[str] = Form(""),
     state: Optional[str] = Form(""),
     nonce: Optional[str] = Form(""),
+    code_challenge: Optional[str] = Form(""),
+    code_challenge_method: Optional[str] = Form(""),
     client_model: dict = Depends(get_client_model),
 ):
     client = client_model.readClient(client_id)
@@ -70,6 +76,8 @@ async def decision(
                     "password": password,
                     "scope": scope,
                     "nonce": nonce,
+                    "code_challenge": code_challenge,
+                    "code_challenge_method": code_challenge_method,
                 })
             res = response.json()
         else:

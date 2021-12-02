@@ -40,6 +40,8 @@ async def code(
     client_id: str = Form(...),
     scope: Optional[str] = Form(None),
     nonce: Optional[str] = Form(None),
+    code_challenge: Optional[str] = Form(None),
+    code_challenge_method: Optional[str] = Form(None),
     user: UserService = Depends(UserService),
     auth_model: AuthModel = Depends(get_auth_model),
     client_model: ClientModel = Depends(get_client_model),
@@ -55,6 +57,8 @@ async def code(
         "username": user.username,
         "scope": scope,
         "nonce": nonce,
+        "code_challenge": code_challenge,
+        "code_challenge_method": code_challenge_method,
     })
 
     auth_model.saveCode(code)
